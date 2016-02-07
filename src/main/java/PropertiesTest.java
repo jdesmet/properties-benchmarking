@@ -124,12 +124,14 @@ public class PropertiesTest {
     // warmup
     // You can reformat the printed tables suitable for SO Postings using
     // following web tool: https://ozh.github.io/ascii-tables/
-    System.out.println("Warming up ...");
+    System.out.println("Warming up (ignore) ...");
     p = new PropertiesTest(100);
     p.test();
     // actual
-    System.out.println("Final test ...");
     p = new PropertiesTest(10000000);
-    p.test();
+    for (int i = 0; i < 100; i++) {
+      System.out.println("Sampling test "+i);
+      p.test();
+    }
   }
 }
