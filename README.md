@@ -39,30 +39,30 @@ One issue I was possibly expecting is that both manual lock on properties, and t
 
 # Conclusions
 
-1. `Properties` *always* benefits from explicitly synchronizing.
-2. `Map` *never* benefits from explicitly synchronizing.
-3. Within all the `Properties` methods, it is the fastest to use the synchronized version of any of the iteration methods (`forEach`, `stream`, for-loop).
-4. Clearly the winner is the non-synchronized version of `Map`. More specifically `for (...) m.put(k,v)` is the fastest.
+Conclusion is now that the methods are really pretty much irrelevant. I can still see that `HashMap` is overall a bit better performing than `Properties` but not enough to make me choose performance over readability.
 
-However, I am left with one conundrum: synchronizing access to a Map, adds an unexplainable amount of overhead to it. Why is that?
+As per the suggestion of @Holger, I would propose to just use the `Properties.putAll(other)` method. It is fast, and performs about as well as the others.
 
-## The Research
+However, if you do use this in a multithreaded environment, I would suggest using `HashMap`, and carefully consider concurrent access. Usually that is easily accomplishable without the need of overly locking/synchronize.
 
-After many tests, and fixing several outside factors affecting those, I came to a good set of benchmarks. These are my results formatted with the help of [ascii-tables](https://ozh.github.io/ascii-tables/):
+I think that was a good lesson learned.
+
+Below are a bit more normalized measurements. I cheated a little by eyeballing and picking a sample without outliers instead of trying to average/median over multiple samples. Just for avoiding the complexity (and additional work) of doing so, or having to acquire an external tool. Results are formatted with the help of [ascii-tables](https://ozh.github.io/ascii-tables/):
 
 |               Name               | Unlocked | Locked |
 |----------------------------------|---------:|-------:|
-| putAll->Properties               | 7,882    | 4,781  |
-| forEach->setProperty->Properties | 17,077   | 1,948  |
-| stream->setProperty->Properties  | 11,895   | 1,441  |
-| loop->setProperty->Properties    | 17,741   | 1,496  |
-| forEach->put->Properties         | 12,095   | 1,743  |
-| stream->put->Properties          | 12,213   | 1,795  |
-| loop->put->Properties            | 12,180   | 1,586  |
-| putAll->Map                      | 1,384    | 13,706 |
-| forEach->put->Map                | 879      | 14,645 |
-| stream->put->Map                 | 914      | 15,290 |
-| loop->put->Map                   | 799      | 1,577  |
+| putAll->Properties               | 1,349    | 1,552  |
+| forEach->setProperty->Properties | 2,080    | 1,743  |
+| stream->setProperty->Properties  | 1,659    | 1,539  |
+| loop->setProperty->Properties    | 1,351    | 1,358  |
+| forEach->put->Properties         | 1,372    | 1,650  |
+| stream->put->Properties          | 1,300    | 1,646  |
+| loop->put->Properties            | 1,739    | 1,415  |
+| putAll->Map                      | 803      | 849    |
+| forEach->put->Map                | 1,001    | 1,010  |
+| stream->put->Map                 | 1,106    | 1,021  |
+| loop->put->Map                   | 969      | 1,014  |
+
 
 These are all results from copying either a `Map` into `Properties`, or a `Map` into `Map`. The conclusions to be made are:
 
@@ -83,3 +83,5 @@ for (Map.Entry<String,String> e:SOURCEMAP.entrySet()) m.put(e.getKey(), e.getVal
 ```
 
 See also the Stack Overflow Posting at http://stackoverflow.com/q/35140487/744133
+
+See the source code for more detailed information.
